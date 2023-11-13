@@ -280,11 +280,11 @@ int PcapParser::Capture(int capturetime)
 
 int main()
 {
-    string file = "test3_pcap.pcapng";
+    string file = "test_pcap.pcapng";
+
+    //string file = "test3.pcap.pcapng";
     // content-type='application/json'있는거 
 
-    //string file = "test1.pcap.pcapng";
-    //content-type='application/ocsp-request,,,'
     PcapParser pcapParser(file);
     int result = pcapParser.ParsePcapFile();
     return result;
