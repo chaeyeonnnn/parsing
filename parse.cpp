@@ -282,7 +282,7 @@ int main()
 {
     string file = "test_pcap.pcapng";
 
-    //string file = "test3.pcap.pcapng";--> 포트 8080으로 바꿔서
+    //string file = "test3.pcqp.pcapng";--> 포트 8080으로 바꿔서
     //content-type='application/json'있는거 
 
     PcapParser pcapParser(file);
