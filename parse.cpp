@@ -188,13 +188,13 @@ void PcapParser::Parse(pcap_pkthdr* header,const u_char *data, uint caplen)
             cout << "Dst port: " << dstPort << endl;
 
             const u_char *datastart = ipHeaderStart + sizeof(IP) + sizeof(TCP);
-            memcpy(packet->payload, datastart, dataLength);
+            memcpy(packet->payload, datastart+1, dataLength);
 
             cout << "------------------------------------" << endl;
             if (dataLength > 0)
             {
                 cout << "Data:" << endl;
-                for (int i = 1; i < dataLength; ++i)
+                for (int i = 0; i < dataLength; ++i)
                 
                 ///r/n 이 .. 으로 나옴 —> 먼저 0d0a로 나눠서 그 이후에 바꾸기
                 /*
