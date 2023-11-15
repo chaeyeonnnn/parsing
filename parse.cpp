@@ -111,8 +111,8 @@ void PcapParser::Parse(pcap_pkthdr* header, const u_char *data, uint caplen) {
         parseIP(packet->ip);
         parseTCP(packet->tcp, caplen-ethernetHeaderLength-(packet->ip.version & 0x0F) * 4 - (packet->tcp.offsets >> 4) * 4);
         const u_char* datastart = ipHeaderStart + sizeof(IP) + sizeof(TCP);
-        memcpy(packet->payload, datastart, dataLength);
-        parsejson(datastart + 1, dataLength);
+        memcpy(packet->payload, datastart+1, dataLength);
+        parsejson(datastart, dataLength);
 
     }
 
