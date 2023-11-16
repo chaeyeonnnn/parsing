@@ -75,20 +75,20 @@ private:
         Ether eth;
         IP ip;
         TCP tcp;
-        u_char payload[1000];
+        uchar payload[1000];
     };
     #pragma pack(pop)
 
     
     pcap_t *handle;
-    void Parse(pcap_pkthdr* header,const u_char *data, uint caplen);
+    void Parse(pcap_pkthdr* header,const uchar *data, uint caplen);
     void parseEthernet(const Ether& eth);
     void parseIP(const IP& ip);
     void parseTCP(const TCP& tcp, int dataLength);
-    void parsejson(const u_char* payload, int dataLength);
+    void parsejson(const uchar* payload, int dataLength);
 };
 
-void PcapParser::Parse(pcap_pkthdr* header, const u_char *data, uint caplen) {
+void PcapParser::Parse(pcap_pkthdr* header, const uchar *data, uint caplen) {
     
     Packet* packet = (Packet *)data;
     ushort ethertype = ntohs(packet->eth.ether_type); 
@@ -106,11 +106,11 @@ void PcapParser::Parse(pcap_pkthdr* header, const u_char *data, uint caplen) {
     if (ethertype == 0x0800&&pro_id == 6 &&(srcPort == 8080 || dstPort==8080) && (dataLength>0)){
         parseEthernet(packet->eth);
         int ethernetHeaderLength = sizeof(Ether);
-        const u_char* ipHeaderStart = data + ethernetHeaderLength;
+        const uchar* ipHeaderStart = data + ethernetHeaderLength;
 
         parseIP(packet->ip);
         parseTCP(packet->tcp, caplen-ethernetHeaderLength-(packet->ip.version & 0x0F) * 4 - (packet->tcp.offsets >> 4) * 4);
-        const u_char* datastart = ipHeaderStart + sizeof(IP) + sizeof(TCP);
+        const uchar* datastart = ipHeaderStart + sizeof(IP) + sizeof(TCP);
         memcpy(packet->payload, datastart+1, dataLength);
         parsejson(packet->payload, dataLength);
 
@@ -198,7 +198,7 @@ void PcapParser::parseTCP(const TCP& tcp, int dataLength){
 
 }
 
-void PcapParser::parsejson(const u_char* payload, int dataLength){
+void PcapParser::parsejson(const uchar* payload, int dataLength){
     //content-type이 appication/json이면 파싱하돋록
     cout << "------------------------------------" << endl;
     if (dataLength > 0)
@@ -233,7 +233,7 @@ void PcapParser::parsejson(const u_char* payload, int dataLength){
 int PcapParser::ParsePcapFile()
 {
     struct pcap_pkthdr header;
-    const u_char *data;
+    const uchar *data;
 
     while ((data = pcap_next(handle, &header)) != nullptr)
     {
