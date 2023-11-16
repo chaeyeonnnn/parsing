@@ -57,7 +57,8 @@ private:
         ushort dst_port;
         uint seq;
         uint ack;
-        uchar offsets; //offset+flag
+        uchar offsets;
+        uchar flags;
         ushort window_size;
         ushort checksum;
         ushort urgent_pointer;
@@ -111,7 +112,7 @@ void PcapParser::Parse(pcap_pkthdr* header, const uchar *data, uint caplen) {
         parseIP(packet->ip);
         parseTCP(packet->tcp, caplen-ethernetHeaderLength-(packet->ip.version & 0x0F) * 4 - (packet->tcp.offsets >> 4) * 4);
         const uchar* datastart = ipHeaderStart + sizeof(IP) + sizeof(TCP);
-        memcpy(packet->payload, datastart+1, dataLength);
+        memcpy(packet->payload, datastart, dataLength);
         parsejson(packet->payload, dataLength);
 
     }
@@ -354,7 +355,8 @@ private:
         ushort dst_port;
         uint seq;
         uint ack;
-        uchar offsets; //offset+flag
+        uchar offsets;
+        uchar flags;
         ushort window_size;
         ushort checksum;
         ushort urgent_pointer;
