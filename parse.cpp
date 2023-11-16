@@ -220,7 +220,7 @@ void PcapParser::parsejson(const uchar* payload, int dataLength){
         }
         /*
         {
-        cout << hex << setw(2) << setfill('0') << static_cast<int>(packet->payload[i]) << " ";
+        cout << hex << setw(2) << setfill('0') << static_cast<int>(payload[i]) << " ";
         }*/
         
     }
@@ -248,7 +248,7 @@ int PcapParser::ParsePcapFile()
 int PcapParser::Capture(int capturetime)
 {
     struct pcap_pkthdr header;
-    const u_char *packet;
+    const uchar *packet;
     time_t starttime = time(nullptr);
 
     while (time(nullptr) - startTime < capturetime)
@@ -291,7 +291,6 @@ int main()
 
 
 /*
-
 #include <pcap.h>
 #include <iostream>
 #include <string>
@@ -370,21 +369,27 @@ private:
         Ether eth;
         IP ip;
         TCP tcp;
-        u_char* payload;
-        
+        uchar* payload;
+        Packet() : payload(nullptr) {}
+
+        ~Packet() {
+            if (payload != nullptr) {
+                delete[] payload;
+            }
+        }
     };
     #pragma pack(pop)
 
     
     pcap_t *handle;
-    void Parse(pcap_pkthdr* header,const u_char *data, uint caplen);
+    void Parse(pcap_pkthdr* header,const uchar *data, uint caplen);
     void parseEthernet(const Ether& eth);
     void parseIP(const IP& ip);
     void parseTCP(const TCP& tcp, int dataLength);
-    void parsejson(const u_char *payload, int dataLength);
+    void parsejson(const uchar *payload, int dataLength);
 };
 
-void PcapParser::Parse(pcap_pkthdr* header, const u_char *data, uint caplen) {
+void PcapParser::Parse(pcap_pkthdr* header, const uchar *data, uint caplen) {
     Packet* packet = (Packet *)data;
     ushort ethertype = ntohs(packet->eth.ether_type); 
 
@@ -406,14 +411,14 @@ void PcapParser::Parse(pcap_pkthdr* header, const u_char *data, uint caplen) {
 
         parseEthernet(packet->eth);
         int ethernetHeaderLength = sizeof(Ether);
-        const u_char* ipHeaderStart = data + ethernetHeaderLength;
+        const uchar* ipHeaderStart = data + ethernetHeaderLength;
 
         parseIP(packet->ip);
         parseTCP(packet->tcp, caplen-ethernetHeaderLength-(packet->ip.version & 0x0F) * 4 - (packet->tcp.offsets >> 4) * 4);
-        const u_char* datastart = ipHeaderStart + sizeof(IP) + sizeof(TCP);
+        const uchar* datastart = ipHeaderStart + sizeof(IP) + sizeof(TCP)+1;
         
-        packet->payload = new u_char[dataLength];
-        memcpy(packet->payload, datastart+1, dataLength);
+        packet->payload = new uchar[dataLength];
+        memcpy(packet->payload, datastart, dataLength);
         parsejson(packet->payload, dataLength);
 
     }
@@ -508,23 +513,17 @@ void PcapParser::parsejson(const u_char* payload, int dataLength){
         cout << "Data:" << endl;
         for (int i = 0; i < dataLength; i++)        
         {  
-        // 
-        //     char c = payload[i];
-        //     if (isprint(c))
-        //     {
-        //         cout << c;
-        //     }
-        //     else{
-        //         cout << ".";
-        //     }
-        //     
-        
-            cout << hex << setw(2) << setfill('0') << static_cast<int>(payload[i]) << " ";
-        //Data:a5 8c d4 aa aa 00 00-->어디서 나온 애?
-        //31 20 33 30 34 20 4e 6f--> HTTP/1.1 의 HTTP/1.이 짤리고 그 다음부터 출력되는중
-        
+            char c = payload[i];
+            if (isprint(c))
+            {
+                cout << c;
+            }
+            else{
+                cout << ".";
+            }
         } 
     }    
+    cout << endl; 
     cout << "======data end====" << endl;
     delete[] payload;
 
@@ -532,12 +531,10 @@ void PcapParser::parsejson(const u_char* payload, int dataLength){
 
 
 
-
-
 int PcapParser::ParsePcapFile()
 {
     struct pcap_pkthdr header;
-    const u_char *data;
+    const uchar *data;
 
     while ((data = pcap_next(handle, &header)) != nullptr)
     {
@@ -547,7 +544,7 @@ int PcapParser::ParsePcapFile()
     return 0;
 }
 
-// 
+
 // //실시간
 // int PcapParser::Capture(int capturetime)
 // {
@@ -589,7 +586,7 @@ int main()
     pcapParser.ParsePcapFile();
 }
 
-// test.pcapng No.18 71 bytes 패킷--> 지금 출력__TCP payload ..0 이랑 2 Reassambled TCP segments—> 여기에 HTTP1.1 ~~ 찐 데이터 저장 
+// test.pcapng No.18 71 bytes 패킷--> 지금 출력__TCP payload ..0 이랑 2 Reassambled TCP segments—> 여기에 HTTP1.1 ~~ 데이터 저장 
 // 근데 순서는 TCP segments 가 먼저 출력되는 상태
 //--> 생각해볼것 
 
