@@ -291,6 +291,9 @@ int main()
 
 
 /*
+
+// payload 동적으로 바꾼 버전 
+
 #include <pcap.h>
 #include <iostream>
 #include <string>
